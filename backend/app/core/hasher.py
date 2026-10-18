@@ -1,7 +1,7 @@
 import asyncio
 
 from argon2 import PasswordHasher
-from argon2.exceptions import InvalidHashError, VerifyMismatchError
+from argon2.exceptions import InvalidHashError, VerificationError, VerifyMismatchError
 
 ph = PasswordHasher()
 
@@ -20,9 +20,7 @@ async def hash_password(password: str) -> str:
     return hashed_password
 
 
-async def verify_password(
-    hashed_password: str, plain_password: str
-) -> tuple[bool, str]:
+async def verify_password(hashed_password: str, plain_password: str) -> bool:
     """
     Verifies a plain text password against a hashed password.
 
@@ -31,16 +29,16 @@ async def verify_password(
         plain_password (str): The plain text password to verify.
 
     Returns:
-        tuple[bool, str]: A tuple containing a boolean indicating if the password matches and a string with the result message.
+        bool: True if the password matches, False otherwise.
     """
     try:
         await asyncio.to_thread(ph.verify, hashed_password, plain_password)
-        return (True, "Password verified successfully")
+        return True
     except VerifyMismatchError:
-        return (False, "Password does not match")
+        return False
     except InvalidHashError:
-        return (False, "Invalid hash format")
+        return False
 
 
 async def needs_rehash(hashed_password: str) -> bool:
-    return await asyncio.to_thread(ph.needs_rehash, hashed_password)
+    return await asyncio.to_thread(ph.check_needs_rehash, hashed_password)
