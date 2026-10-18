@@ -8,8 +8,8 @@ from .base import Base
 
 
 class RoleEnum(enum.Enum):
-    admin = "admin"
-    teacher = "teacher"
+    admin: str = "admin"
+    teacher: str = "teacher"
 
 
 class User(Base):
