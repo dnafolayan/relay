@@ -42,3 +42,4 @@ async def verify_password(hashed_password: str, plain_password: str) -> bool:
 
 async def needs_rehash(hashed_password: str) -> bool:
     return await asyncio.to_thread(ph.check_needs_rehash, hashed_password)
+    # only check if a hash needs rehashing after a user has logged in successfully
