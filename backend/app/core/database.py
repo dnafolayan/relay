@@ -1,9 +1,12 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from .config import AppSettings
 
 settings = AppSettings()
 
-engine = create_engine(settings.db_url.get_secret_value())
-SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
+DATABASE_URL = settings.db_url.get_secret_value()
+
+engine = create_async_engine(DATABASE_URL, echo=False)
+SessionLocal = async_sessionmaker(
+    bind=engine, autocommit=False, autoflush=False, expire_on_commit=False
+)
