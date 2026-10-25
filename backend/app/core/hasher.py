@@ -32,8 +32,8 @@ async def verify_password(hashed_password: str, plain_password: str) -> bool:
         bool: True if the password matches, False otherwise.
     """
     try:
-        await asyncio.to_thread(ph.verify, hashed_password, plain_password)
-        return True
+        result = await asyncio.to_thread(ph.verify, hashed_password, plain_password)
+        return bool(result)
     except VerifyMismatchError:
         return False
     except InvalidHashError:
