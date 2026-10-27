@@ -4,7 +4,7 @@ import enum
 from sqlalchemy import DateTime, Enum, func
 from sqlalchemy.orm import Mapped, mapped_column
 
-from .base import Base
+from app.models.base import Base
 
 
 class RoleEnum(enum.Enum):
