@@ -1,7 +1,15 @@
 import asyncio
 
+from app.custom_exceptions.password_processing_exception import (
+    PasswordProcessingException,
+)
 from argon2 import PasswordHasher
-from argon2.exceptions import InvalidHashError, VerifyMismatchError
+from argon2.exceptions import (
+    HashingError,
+    InvalidHashError,
+    UnsupportedParametersError,
+    VerifyMismatchError,
+)
 
 ph = PasswordHasher()
 
@@ -16,7 +24,19 @@ async def hash_password(password: str) -> str:
     Returns:
         str: The hashed password.
     """
-    hashed_password = await asyncio.to_thread(ph.hash, password)
+    try:
+        hashed_password = await asyncio.to_thread(ph.hash, password)
+    except HashingError as e:
+        raise PasswordProcessingException(
+            "Password hashing failed due to a system resource error"
+        ) from e
+    except UnsupportedParametersError as e:
+        raise PasswordProcessingException(
+            "Invalid cryptographic parameters configured"
+        ) from e
+    except ValueError as e:
+        raise PasswordProcessingException("Invalid password value") from e
+
     return hashed_password
 
 
