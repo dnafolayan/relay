@@ -9,5 +9,6 @@ class AppSettings(BaseSettings):
     app_description: str = "API for handling relay operations"
 
     db_url: SecretStr
+    test_db_url: SecretStr
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
