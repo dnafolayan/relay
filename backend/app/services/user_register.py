@@ -9,7 +9,7 @@ from app.custom_exceptions.user_registration_exception import (
 from app.custom_exceptions.user_retrieval_exception import (
     UserRetrievalException,
 )
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.schemas.user import UserCreate, UserResponse
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -31,7 +31,7 @@ async def register_user(
     password_hash = await hash_password(user_in.password)
 
     new_user = User(
-        role="user",
+        role=UserRole.USER,
         first_name=user_in.first_name,
         last_name=user_in.last_name,
         email=user_in.email,
