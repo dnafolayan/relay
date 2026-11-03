@@ -1,3 +1,6 @@
+import subprocess
+import sys
+
 import pytest_asyncio
 from app.core.config import AppSettings
 from app.models.base import Base
@@ -6,30 +9,39 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 
 settings = AppSettings()
 
-TEST_DB_URL = settings.test_db_url.get_secret_value()
+DB_TEST_URL = settings.db_test_url.get_secret_value()
 
 
-@pytest_asyncio.fixture(scope="session")
+def pytest_sessionstart(session):
+    subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "alembic",
+            "-x",
+            "db=test",
+            "upgrade",
+            "head",
+        ],
+        check=True,
+    )
+
+
+@pytest_asyncio.fixture(scope="session", loop_scope="session")
 async def db_engine():
-    test_engine = create_async_engine(TEST_DB_URL, echo=False)
+    test_engine = create_async_engine(DB_TEST_URL, echo=False)
     try:
-        async with test_engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-
         yield test_engine
     finally:
-        try:
-            async with test_engine.begin() as conn:
-                await conn.run_sync(Base.metadata.drop_all)
-        finally:
-            await test_engine.dispose()
+        await test_engine.dispose()
 
 
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture(scope="function", loop_scope="session")
 async def db_session(db_engine):
     TestAsyncSessionLocal = async_sessionmaker(
         bind=db_engine, class_=AsyncSession, autoflush=False, expire_on_commit=False
     )
+
     async with TestAsyncSessionLocal() as session:
         try:
             yield session
