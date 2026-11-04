@@ -4,6 +4,7 @@ from logging.config import fileConfig
 from alembic import context
 from app.core.config import AppSettings
 from app.models.base import Base
+from app.models.school import School
 from app.models.user import User
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
@@ -70,6 +71,7 @@ def do_run_migrations(connection):
     context.configure(
         connection=connection,
         target_metadata=target_metadata,
+        compare_type=True,
     )
 
     with context.begin_transaction():
