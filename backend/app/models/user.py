@@ -6,7 +6,7 @@ from sqlalchemy import DateTime, ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
-    from app.models.school import School  # noqa: F401
+    from app.models.school import School
 
 
 class User(Base):

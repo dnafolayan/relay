@@ -1,8 +1,4 @@
 class PasswordProcessingException(Exception):
-    def __init__(self, detail: str | None = None):
-        if detail:
-            self.message = f"Password processing failed: {detail}"
-        else:
-            self.message = "Password processing failed while registering the user."
-        self.detail = detail
+    def __init__(self, message: str):
+        self.message = f"Password processing failed: {message}"
         super().__init__(self.message)
