@@ -2,11 +2,9 @@ from contextlib import asynccontextmanager
 
 from app.core.config import AppSettings
 from app.core.database import engine
-from app.core.dependencies.session_generator import get_session
 from app.models.base import Base
 from app.schemas.user import UserCreate, UserResponse
-from fastapi import FastAPI, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import FastAPI, status
 
 settings = AppSettings()  # app settings
 APP_NAME = settings.app_name
@@ -28,7 +26,7 @@ app = FastAPI(title=APP_NAME, description=API_DESCRIPTION, lifespan=lifespan)
 async def register_user_endpoint(user: UserCreate):
     try:
         pass
-    except Exception as e:
+    except Exception:
         pass
 
 

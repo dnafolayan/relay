@@ -1,75 +1,97 @@
 import asyncpg
 from app.core.hasher import hash_password
-from sqlalchemy import select
+from app.custom_exceptions.school_admin_already_exists import (
+    SchoolAdminAlreadyExistsException,
+)
+from app.custom_exceptions.school_already_exists_exception import (
+    SchoolAlreadyExistsException,
+)
+from app.models.school import School
+from app.models.user import User
+from app.schemas.school_reg import (
+    AdminResponse,
+    SchoolRegResponse,
+    SchoolRegSchema,
+    SchoolResponse,
+)
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-# async def register_user(
-#     user_in: UserCreate,
-#     session: AsyncSession,
-# ) -> UserResponse:
-#     stmt = select(User).where(User.email == user_in.email)
-#     existing_user = (await session.execute(stmt)).scalar_one_or_none()
 
-#     if existing_user:
-#         raise UserAlreadyExistsException(
-#             email=user_in.email, message="User email is already registered"
-#         )
+def _normalize_email(value: str) -> str:
+    return value.strip().lower()
 
-#     password_hash = await hash_password(user_in.password)
 
-#     new_user = User(
-#         role=UserRole.USER,
-#         first_name=user_in.first_name,
-#         last_name=user_in.last_name,
-#         email=user_in.email,
-#         password_hash=password_hash,
-#     )
+async def register_school(
+    reg_data: SchoolRegSchema, session: AsyncSession
+) -> SchoolRegResponse:
+    school_email = _normalize_email(str(reg_data.email))
+    admin_email = _normalize_email(str(reg_data.admin_email))
 
-#     session.add(new_user)
+    admin_password_hash = await hash_password(reg_data.password)
 
-#     try:
-#         await session.commit()
-#     except IntegrityError as e:
-#         await session.rollback()
+    try:
+        async with session.begin():
 
-#         orig_err = e.orig
+            school_stmt = select(School).where(func.lower(School.email) == school_email)
+            existing_school = (await session.execute(school_stmt)).scalar_one_or_none()
 
-#         if isinstance(orig_err, asyncpg.exceptions.PostgresError):
+            if existing_school:
+                raise SchoolAlreadyExistsException(
+                    email=school_email, message="School email is already registered"
+                )
 
-#             sql_state = orig_err.sqlstate
-#             constraint_name = orig_err.constraint_name
+            admin_stmt = select(User).where(func.lower(User.email) == admin_email)
+            existing_admin = (await session.execute(admin_stmt)).scalar_one_or_none()
 
-#             if sql_state == 23505:
-#                 if constraint_name == "uq_users_email":
-#                     raise UserAlreadyExistsException(
-#                         email=user_in.email, message="User email is already registered"
-#                     ) from e
-#                 else:
-#                     raise UserRegistrationException(
-#                         email=user_in.email,
-#                         message=f"failed to commit user due to unique constraint: {constraint_name}",
-#                     ) from e
-#             else:
-#                 raise UserRegistrationException(
-#                     email=user_in.email,
-#                     message=f"failed to commit user with integrity error code: {sql_state}",
-#                 ) from e
-#         else:
-#             raise UserRegistrationException(
-#                 email=user_in.email, message="Generic integrity error"
-#             ) from e
-#     except Exception as e:
-#         await session.rollback()
-#         raise UserRegistrationException(
-#             email=user_in.email, message="db transaction failed"
-#         ) from e
+            if existing_admin:
+                raise SchoolAdminAlreadyExistsException(email=admin_email)
 
-#     try:
-#         await session.refresh(new_user)
-#     except Exception as e:
-#         raise UserRetrievalException(
-#             email=user_in.email, message="failed to reload created user"
-#         ) from e
+            new_school = School(
+                name=reg_data.name,
+                email=school_email,
+                phone_number=reg_data.phone_number,
+            )
+            session.add(new_school)
+            await session.flush()
 
-#     return UserResponse.model_validate(new_user)
+            new_admin = User(
+                school_id=new_school.id,
+                first_name=reg_data.first_name,
+                last_name=reg_data.last_name,
+                email=admin_email,
+                password_hash=admin_password_hash,
+            )
+            session.add(new_admin)
+            await session.flush()
+    except IntegrityError as e:
+        orig_err = e.orig
+
+        if isinstance(orig_err, asyncpg.exceptions.PostgresError):
+            sql_state = getattr(orig_err, "sqlstate", None)
+            constraint_name = getattr(orig_err, "constraint_name", None)
+
+            if sql_state == "23505":
+                if constraint_name == "schools_email_key":
+                    raise SchoolAlreadyExistsException(
+                        email=school_email,
+                        message="School email is already registered",
+                    ) from e
+                if constraint_name == "users_email_key":
+                    raise SchoolAdminAlreadyExistsException(email=admin_email) from e
+                if constraint_name == "schools_phone_number_key":
+                    raise SchoolAlreadyExistsException(
+                        email=school_email,
+                        message="School phone number is already registered",
+                    ) from e
+        raise
+
+    school_response: SchoolResponse = SchoolResponse.model_validate(new_school)
+    admin_response: AdminResponse = AdminResponse.model_validate(new_admin)
+
+    return SchoolRegResponse(
+        message="School and admin registered successfully",
+        school=school_response,
+        admin=admin_response,
+    )

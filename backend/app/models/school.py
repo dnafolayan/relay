@@ -7,7 +7,7 @@ from sqlalchemy import DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
-    from app.models.user import User  # noqa: F401
+    from app.models.user import User
 
 
 class School(Base):
