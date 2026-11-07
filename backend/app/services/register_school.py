@@ -6,6 +6,9 @@ from app.custom_exceptions.school_admin_already_exists import (
 from app.custom_exceptions.school_already_exists_exception import (
     SchoolAlreadyExistsException,
 )
+from app.custom_exceptions.school_phone_number_already_exists_exception import (
+    SchoolPhoneNumberAlreadyExistsException,
+)
 from app.models.school import School
 from app.models.user import User
 from app.schemas.school_reg import (
@@ -81,9 +84,8 @@ async def register_school(
                 if constraint_name == "users_email_key":
                     raise SchoolAdminAlreadyExistsException(email=admin_email) from e
                 if constraint_name == "schools_phone_number_key":
-                    raise SchoolAlreadyExistsException(
-                        email=school_email,
-                        message="School phone number is already registered",
+                    raise SchoolPhoneNumberAlreadyExistsException(
+                        phone_number=reg_data.phone_number, email=school_email
                     ) from e
         raise
 

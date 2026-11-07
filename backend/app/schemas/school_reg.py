@@ -5,7 +5,6 @@ class SchoolRegSchema(BaseModel):
     name: str = Field(..., description="Name of the school")
     email: EmailStr = Field(..., description="Email address of the school")
     phone_number: str = Field(..., description="Phone number of the school")
-
     first_name: str = Field(..., description="First name of the user")
     last_name: str = Field(..., description="Last name of the user")
     admin_email: EmailStr = Field(..., description="Email address of the user")
@@ -20,12 +19,16 @@ class SchoolResponse(BaseModel):
     email: EmailStr
     phone_number: str
 
+    model_config = ConfigDict(from_attributes=True)
+
 
 class AdminResponse(BaseModel):
     id: int
     first_name: str
     last_name: str
     email: EmailStr
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class SchoolRegResponse(BaseModel):
