@@ -2,7 +2,7 @@ import datetime
 from typing import TYPE_CHECKING
 
 from app.models.base import Base
-from sqlalchemy import DateTime, ForeignKey, func
+from sqlalchemy import DateTime, ForeignKey, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 if TYPE_CHECKING:
@@ -17,11 +17,11 @@ class User(Base):
         ForeignKey("schools.id"), nullable=False, index=True
     )
 
-    first_name: Mapped[str] = mapped_column(nullable=False)
-    last_name: Mapped[str] = mapped_column(nullable=False)
+    first_name: Mapped[str] = mapped_column(String(50), nullable=False)
+    last_name: Mapped[str] = mapped_column(String(50), nullable=False)
 
-    email: Mapped[str] = mapped_column(nullable=False, unique=True)
-    password_hash: Mapped[str] = mapped_column(nullable=False)
+    email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
+    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
 
     school: Mapped["School"] = relationship("School", back_populates="users")
 
