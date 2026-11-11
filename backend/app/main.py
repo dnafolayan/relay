@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 
 from app.api.v1.router import router as api_router
-from app.core.config import AppSettings
+from app.core.config import settings
 from app.core.database import engine
 from app.core.exception_handlers import (
     register_exception_handlers,
@@ -9,7 +9,6 @@ from app.core.exception_handlers import (
 from app.models.base import Base
 from fastapi import FastAPI
 
-settings = AppSettings()
 APP_NAME = settings.app_name
 API_DESCRIPTION = settings.app_description
 
