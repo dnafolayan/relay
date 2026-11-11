@@ -34,7 +34,14 @@ def create_access_token(admin_user_id: int, admin_school_id: int) -> str:
 
 def decode_access_token(token: str) -> dict:
     try:
-        decoded_payload = jwt.decode(token, jwt_secret_key, algorithms=[algorithm])
+        decoded_payload = jwt.decode(
+            token,
+            jwt_secret_key,
+            algorithms=[algorithm],
+            options={
+                "require": ["sub", "school_id", "iat", "exp", "jti"],
+            },
+        )
         return decoded_payload
     except jwt.ExpiredSignatureError as exc:
         raise JwtDecodeException("Token has expired") from exc
