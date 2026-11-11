@@ -1,4 +1,4 @@
-from pydantic import SecretStr
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -10,5 +10,10 @@ class AppSettings(BaseSettings):
 
     db_url: SecretStr
     db_test_url: SecretStr
+
+    jwt_secret_key: SecretStr
+    jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = Field(default=15, gt=0)
+    refresh_token_expire_days: int = Field(default=7, gt=0)
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
