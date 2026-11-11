@@ -11,5 +11,5 @@ class LoginRequest(BaseModel):
 class LoginResponse(BaseModel):
     access_token: str = Field(..., description="JWT access token")
     token_type: Literal["bearer"] = Field(
-        ..., default="bearer", description="Type of the token, usually 'bearer'"
+        ..., description="Type of the token, usually 'bearer'"
     )
