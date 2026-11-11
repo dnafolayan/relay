@@ -17,3 +17,6 @@ class AppSettings(BaseSettings):
     refresh_token_expire_days: int = Field(default=7, gt=0)
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+
+
+settings = AppSettings()
