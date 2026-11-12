@@ -16,6 +16,8 @@ class AppSettings(BaseSettings):
     access_token_expire_minutes: int = Field(default=15, gt=0)
     refresh_token_expire_days: int = Field(default=7, gt=0)
 
+    redis_url: SecretStr = SecretStr("redis://localhost:6379/0")
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
 
