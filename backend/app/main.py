@@ -6,6 +6,7 @@ from app.core.database import engine
 from app.core.exception_handlers import (
     register_exception_handlers,
 )
+from app.core.redis import redis_client
 from app.models.base import Base
 from fastapi import FastAPI
 
@@ -20,6 +21,7 @@ async def lifespan(app: FastAPI):
     try:
         yield
     finally:
+        await redis_client.aclose()
         await engine.dispose()
 
 
