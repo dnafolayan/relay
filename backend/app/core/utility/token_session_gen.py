@@ -2,6 +2,8 @@ import datetime
 
 from app.core.config import settings
 from app.core.redis import redis_client as r
+from app.custom_exceptions.redis_exception import RedisException
+from redis.exceptions import RedisError
 
 
 async def generate_session(
@@ -18,6 +20,8 @@ async def generate_session(
     expiration_seconds: int = int(
         datetime.timedelta(days=settings.refresh_token_expire_days).total_seconds()
     )
-
-    await r.hset(key, mapping=data)
-    await r.expire(key, expiration_seconds)
+    try:
+        await r.hset(key, mapping=data)
+        await r.expire(key, expiration_seconds)
+    except RedisError as exc:
+        raise RedisException("Failed to persist refresh session") from exc

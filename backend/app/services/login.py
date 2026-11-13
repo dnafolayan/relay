@@ -1,5 +1,6 @@
 from app.core.hasher import verify_password
 from app.core.security.jwt import create_access_token
+from app.core.utility import refresh_token_gen, token_session_gen
 from app.custom_exceptions.auth_service_unavailable_exception import (
     AuthServiceUnavailableException,
 )
@@ -42,5 +43,16 @@ async def login(login_data: LoginRequest, session: AsyncSession) -> LoginRespons
     access_token: str = create_access_token(
         admin_user_id=user.id, admin_school_id=user.school_id
     )
+    refresh_token, secret_hash = refresh_token_gen.gen_refresh_token()
+    session_id = refresh_token.split(".", 1)[0]
 
-    return LoginResponse(access_token=access_token, token_type="bearer")
+    await token_session_gen.generate_session(
+        session_id,
+        secret_hash,
+        user.id,
+        user.school_id,
+    )
+
+    return LoginResponse(
+        access_token=access_token, token_type="bearer", refresh_token=refresh_token
+    )
