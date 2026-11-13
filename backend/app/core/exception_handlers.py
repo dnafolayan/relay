@@ -5,6 +5,7 @@ from app.custom_exceptions.invalid_login_exception import InvalidLoginException
 from app.custom_exceptions.password_processing_exception import (
     PasswordProcessingException,
 )
+from app.custom_exceptions.redis_exception import RedisException
 from app.custom_exceptions.school_admin_already_exists import (
     SchoolAdminAlreadyExistsException,
 )
@@ -72,6 +73,12 @@ async def auth_service_unavailable_exception_handler(
     )
 
 
+async def redis_exception_handler(
+    request: Request, exc: RedisException
+) -> JSONResponse:
+    return JSONResponse(status_code=503, content={"detail": exc.message})
+
+
 def register_exception_handlers(app: FastAPI):
     app.add_exception_handler(
         SchoolAlreadyExistsException, school_already_exists_handler
@@ -90,3 +97,4 @@ def register_exception_handlers(app: FastAPI):
     app.add_exception_handler(
         AuthServiceUnavailableException, auth_service_unavailable_exception_handler
     )
+    app.add_exception_handler(RedisException, redis_exception_handler)
