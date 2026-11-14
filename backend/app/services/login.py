@@ -1,12 +1,12 @@
 from app.core.hasher import verify_password
 from app.core.security.jwt import create_access_token
-from app.core.utility import refresh_token_gen, token_session_gen
+from app.core.utility import redis_session_gen, refresh_token_gen
 from app.custom_exceptions.auth_service_unavailable_exception import (
     AuthServiceUnavailableException,
 )
 from app.custom_exceptions.invalid_login_exception import InvalidLoginException
 from app.models.user import User
-from app.schemas.login import LoginRequest, LoginResponse
+from app.schemas.login import LoginRequest, LoginResult
 from sqlalchemy import func, select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,7 +19,7 @@ def _normalize_email(email: str) -> str:
     return email.strip().lower()
 
 
-async def login(login_data: LoginRequest, session: AsyncSession) -> LoginResponse:
+async def login(login_data: LoginRequest, session: AsyncSession) -> LoginResult:
     normalized_email: str = _normalize_email(login_data.email)
     try:
         async with session.begin():
@@ -46,13 +46,11 @@ async def login(login_data: LoginRequest, session: AsyncSession) -> LoginRespons
     refresh_token, secret_hash = refresh_token_gen.gen_refresh_token()
     session_id = refresh_token.split(".", 1)[0]
 
-    await token_session_gen.generate_session(
+    await redis_session_gen.generate_session(
         session_id,
         secret_hash,
         user.id,
         user.school_id,
     )
 
-    return LoginResponse(
-        access_token=access_token, token_type="bearer", refresh_token=refresh_token
-    )
+    return LoginResult(access_token=access_token, refresh_token=refresh_token)
