@@ -1,6 +1,6 @@
 from app.core.hasher import verify_password
 from app.core.security.jwt import create_access_token
-from app.core.utility import redis_session_gen, refresh_token_gen
+from app.core.utilities import redis_session_gen, refresh_token_gen
 from app.custom_exceptions.auth_service_unavailable_exception import (
     AuthServiceUnavailableException,
 )
